@@ -1,0 +1,16 @@
+services:
+
+  db:
+    image: postgres:17
+
+    environment:
+      POSTGRES_PASSWORD: super_secure_password
+      POSTGRES_USER: up_time
+      POSTGRES_DB: up_time
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
