@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uptime-worker
+  labels:
+    app: uptime-monitor
+    component: worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: uptime-monitor
+      component: worker
+  template:
+    metadata:
+      labels:
+        app: uptime-monitor
+        component: worker
+    spec:
+      containers:
+        - name: worker
+          image: uptime-monitor:dev
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-m", "uptime.worker"]   # same image, different job
+          env:
+            - name: DB_HOST
+              value: uptime-db
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: uptime-db
+                  key: password
+            - name: LOOP_INTERVAL_SECONDS
+              value: "60"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
