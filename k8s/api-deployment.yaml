@@ -27,7 +27,10 @@ spec:
             - name: DB_HOST
               value: "uptime-db"
             - name: DB_PASSWORD
-              value: "super_secure_password"
+              valueFrom:
+                secretKeyRef:
+                  name: uptime-db
+                  key: password
           resources:
             requests:
               cpu: 50m
