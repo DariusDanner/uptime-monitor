@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: uptime-db
+  labels:
+    app: uptime-monitor
+    component: db
+spec:
+  serviceName: uptime-db          # the Service we'll create next
+  replicas: 1
+  selector:
+    matchLabels:
+      app: uptime-monitor
+      component: db
+  template:
+    metadata:
+      labels:
+        app: uptime-monitor
+        component: db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:17
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: up_time
+            - name: POSTGRES_DB
+              value: up_time
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:     # read from the Secret, not plain text
+                  name: uptime-db
+                  key: password
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: schema        # Postgres runs files here on first start
+              mountPath: /docker-entrypoint-initdb.d
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "up_time"]
+            periodSeconds: 5
+      volumes:
+        - name: schema
+          configMap:
+            name: uptime-db-schema
+  volumeClaimTemplates:           # each pod gets its OWN persistent disk
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
