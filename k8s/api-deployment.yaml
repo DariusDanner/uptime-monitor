@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uptime-api
+  labels:
+    app: uptime-monitor
+    component: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: uptime-monitor
+      component: api
+  template:
+    metadata:
+      labels:
+        app: uptime-monitor
+        component: api
+    spec:
+      containers:
+        - name: api
+          image: uptime-monitor:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DB_HOST
+              value: "uptime-db"
+            - name: DB_PASSWORD
+              value: "super_secure_password"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8000
+            initialDelaySeconds: 2
+            periodSeconds: 5

@@ -1,6 +1,6 @@
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 
 from uptime.db import connect
 
@@ -16,7 +16,7 @@ def healthz():
 
 
 @app.get("/readyz")
-def readyz():
+def readyz(response: Response):
     """Readiness probe: can we actually reach the database?"""
     try:
         with connect() as conn:
@@ -24,7 +24,8 @@ def readyz():
                 cur.execute("SELECT 1")
         return {"status": "ready"}
     except Exception:
-        return {"status": "not ready"}, 503
+        response.status_code = 503
+        return {"status": "not ready"}
 
 
 @app.get("/api/status")
