@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: uptime-monitor
+  namespace: argocd                 # Applications live in ArgoCD's namespace
+spec:
+  project: default
+  source:                           # WHERE the manifests come from
+    repoURL: https://github.com/DariusDanner/uptime-monitor.git
+    targetRevision: main
+    path: k8s
+  destination:                      # WHERE they get deployed
+    server: https://kubernetes.default.svc   # = this same cluster
+    namespace: default
+  syncPolicy:
+    automated:
+      selfHeal: true    # manual changes in the cluster get reverted
+      prune: true       # things deleted from Git get deleted in the cluster
