@@ -17,11 +17,20 @@ spec:
         app: uptime-monitor
         component: worker
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: worker
           image: uptime-monitor:dev
           imagePullPolicy: IfNotPresent
-          command: ["python", "-m", "uptime.worker"]   # same image, different job
+          command: ["python", "-m", "uptime.worker"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           env:
             - name: DB_HOST
               value: uptime-db
